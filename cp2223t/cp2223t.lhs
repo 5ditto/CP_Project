@@ -1224,7 +1224,12 @@ vencedor (a,b) v = [(vencedor,3),(derrotado,0)]
 
 matchResult func jogo = ((either (empate jogo) (vencedor jogo)) . outMaybe . func) jogo 
 
-glt = undefined
+outTeamList [t] = i1 t
+outTeamList l = let splitPoint = div (length l) 2
+                    sl = splitAt splitPoint l
+                in i2 sl
+
+glt = outTeamList
 \end{code}
 \subsubsection*{Versão probabilística}
 \begin{code}
