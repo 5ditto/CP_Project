@@ -1212,7 +1212,8 @@ adiciona ((a,b), (a1,b1):t) = if a==a1 then (a,b + b1):t else (a1,b1) : adiciona
 \end{code}
 Geração dos jogos da fase de grupos:
 \begin{code}
-pairup equipas = [(a,b) | a <- equipas, b <- equipas, a!=b]
+pairup [] = []
+pairup (x:xs) = map (\y -> (x,y)) xs ++pairup xs
 
 outMaybe Nothing = i1 ()
 outMaybe (Just a) = i2 a
