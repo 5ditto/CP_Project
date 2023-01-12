@@ -12,7 +12,7 @@ import Cp
 
 --- Basic -----------
 
-open h = do { writeFile "_.html" h ; system ("open _.html") } 
+open h = do { writeFile "_.html" h ; system ("xdg-open _.html") } 
 
 converse = map swap
 

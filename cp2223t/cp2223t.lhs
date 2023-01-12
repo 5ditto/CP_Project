@@ -1169,29 +1169,31 @@ post = (either (singleton . singleton) (cons . (split (p1) (\(x,l) -> map (x++) 
 
 squares = anaRose gsq
 
-gsq (s,0) = (s,[])
-gsq (sq@((x,y),s),p+1) = (sq,[sq1,sq2,sq3,sq4,sq5,sq6,sq7,sq8])
+gsq (((x,y),s),0) = ( ((x+(s/3),y+(s/3)),s/3) ,[])
+gsq (sq@((x,y),s),p+1) = ( ((x+newSide,y+newSide),newSide) , [sq1,sq2,sq3,sq4,sq5,sq6,sq7,sq8] )
     where newSide = s/3
-          xEsq = x - (2*s/3)
-          xMeio = x + (s/3)
-          xDir = x + (4*s/3)
-          yCima = y - (4*s/3)
-          yMeio = y - (s/3)
-          yBaixo = y + (2*s/3)
-          sq1 =  (((xEsq,yCima),newSide),p)
-          sq2 =  (((xMeio,yCima),newSide),p)
-          sq3 =  (((xDir,yCima),newSide),p)
-          sq4 =  (((xEsq,yMeio),newSide),p)
-          sq5 =  (((xDir,yMeio),newSide),p)
-          sq6 =  (((xEsq,yBaixo),newSide),p)
-          sq7 =  (((xMeio,yBaixo),newSide),p)
-          sq8 =  (((xDir,yBaixo),newSide),p)
+          xEsq = x
+          xMeio = x + newSide
+          xDir = x + 2*newSide
+          yCima = y + 2*newSide
+          yMeio = y + newSide
+          yBaixo = y
+          sq1 =  (((xEsq  ,yCima  ),newSide),p)
+          sq2 =  (((xMeio ,yCima  ),newSide),p)
+          sq3 =  (((xDir  ,yCima  ),newSide),p)
+          sq4 =  (((xEsq  ,yMeio  ),newSide),p)
+          sq5 =  (((xDir  ,yMeio  ),newSide),p)
+          sq6 =  (((xEsq  ,yBaixo ),newSide),p)
+          sq7 =  (((xMeio ,yBaixo ),newSide),p)
+          sq8 =  (((xDir  ,yBaixo ),newSide),p)
 
 rose2List = cataRose gr2l 
 
 gr2l = cons . (id >< concat)
 
-carpets = undefined
+fazPar a b = (a,b)
+
+carpets = (id -|- (split (sierpinski . (fazPar ((0,0),32))) id)) . outNat
 
 present = undefined
 \end{code}
