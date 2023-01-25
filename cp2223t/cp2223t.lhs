@@ -159,15 +159,15 @@
 
 \begin{center}\large
 \begin{tabular}{ll}
-Grupo nr. & 99 (preencher)
+Grupo 48. & 99 (preencher)
 \\\hline
-a11111 & Nome1 (preencher)
+a95437 & Beatriz Ribeiro Monteiro
 \\
-a22222 & Nome2 (preencher)
+a95719 & João Pedro Machado Ribeiro
 \\
-a33333 & Nome3 (preencher)
+a96386 & João Miguel Rodrigues da Cunha
 \\
-a44444 & Nome4 (preencher, se aplicável)
+a96626 & João Carlos Fernandes Novais
 \end{tabular}
 \end{center}
 
@@ -226,14 +226,6 @@ f a b c 0 = 0
 f a b c 1 = 1
 f a b c 2 = 1
 f a b c (n+3) = a * f a b c (n+2) + b * f a b c (n+1) + c * f a b c n
-
-f1 a b c 0 = 0
-f1 a b c 1 = 1
-f1 a b c 2 = 1
-f1 a b c n = g a b c (n-3)
-  where g x y z 0 = a * f1 x y z 2 + b * f1 x y z 1 + c * f1 x y z 0
-        g x y z m = g x y z (m-1) + x * f1 x y z (n-m-2) + y * f1 x y z (n-m-1) + z * f1 x y z (n-m)
-
 
 \end{code}
 Assim, por exemplo, |f 1 1 1| irá dar como resultado a sequência:
@@ -340,10 +332,10 @@ pública de \CP.}
 
 Precisamos pois da composição de |tax| com uma função de pós-processamento |post|,
 %
-\begin{spec}
+\begin{code}
 tudo :: [String] -> [[String]]
 tudo = post . tax
-\end{spec}
+\end{code}
 para obter o efeito que se mostra na tabela \ref{table:acmccs}.
 
 \begin{table}[ht!]
@@ -451,7 +443,7 @@ Uma vez que o tapete é também um quadrado, o objetivo será, a partir das info
 
 Portanto, numa primeira fase, dadas as informações do tapete, é construida a árvore de suporte com todos os quadrados a desenhar, para uma determinada profundidade.
 \begin{code}
---squares :: (Square, Int) -> Rose Square
+squares :: (Square, Int) -> Rose Square
 \end{code}
 |NB|: No programa, a profundidade começa em $0$ e não em $1$.
 
@@ -1093,6 +1085,7 @@ best n = map fst . take n . reverse . presort p2
 consolidate :: (Num d, Eq d, Eq b) => [(b, d)] -> [(b, d)]
 consolidate = map (id><sum) . collect
 
+
 collect :: (Eq a, Eq b) => [(a, b)] -> [(a, [b])]
 collect x = nub [ k |-> [ d' | (k',d') <- x , k'==k ] | (k,d) <- x ]
 \end{code}
@@ -1126,22 +1119,177 @@ simples e elegantes.
 
 \subsection*{Problema 1}
 Funções auxiliares pedidas:
+
+
+Para tornar fbl num \emph{for}, é  necessário primeiro definir algumas funções auxiliares, que nos permitam através das leis da recursividade mútua chegar a um catamorfismo, neste caso dos Números Naturais. Começamos por definir algumas funções iniciais (p, q e r), que se chamam recursivamente umas às outras, um dos princípios da recursividade mútua, e após continuarmos a desenvolver estes cálculos, conseguimos finalmente chegar a um Catamorfismo que pode ser transformado num \emph{for}, conseguindo assim descobrir a definição de \emph{loop} e \emph{initial}.
+
+Consideremos F2:
+\begin{eqnarray*}
+
+	id + |split (split j k) l | = F |split (split j k) l|
+
+	\start
+    |lcbr(
+          p a b c 0 = 1
+    )(
+          p a b c (n+1) = a * (p a b c n) + b * q a b c  n + c* r a b c n
+    )|
+
+    |lcbr(
+          q a b c 0 = 1
+    )(
+          q a b c (n+1) = p n
+     )|
+
+    |lcbr(
+          r a b c 0 = 0
+    )(
+          r a b c (n+1) = q n
+     )|
+
+\just\equiv{ Def-const (75) * 6; Def succ; Def (a*); Def (b*); Def (c*); Def-comp(73) * 8; Def-split(77)*2}
+%
+    |lcbr(
+          ((p a b c) . 0) n = (const 1) n
+    )(
+          ((p a b c) >< succ) n  = add .( split (add . (split ((a*) . (p a b c)) ((b*) . (q a b c)))) ((c*) . (r a b c))) n
+    )|
+
+    |lcbr(
+          ((q a b c) . 0) n = (const 1) n
+    )(
+          ((q a b c) . succ) n = p a b c n
+     )|
+
+    |lcbr(
+          ((r a b c) . 0) n = (const 0) n
+    )(
+          ((r a b c ) . succ) n = q a b c n
+     )|
+\just\equiv{ Igualdade estensional (72) * 6; Absorção-x (11) * 2}
+%
+    |lcbr(
+          (p a b c) . (const 0) = (const 1)
+    )(
+          (p a b c) >< succ  = add .(add . ((a*) >< (b*)) >< (c*)) . split (split (p a b c) (q a b c)) (r a b c)
+    )|
+
+    |lcbr(
+          (q a b c) . (const 0) = (const 1)
+    )(
+          (q a b c) . succ = p a b c
+     )|
+
+    |lcbr(
+          (r a b c) . (const 0) = (const 0)
+    )(
+          (r a b c ) . succ = q a b c
+     )|
+
+\just\equiv{Def in; Cancelamento-+ (18) * 6; p a b c = j; q a b c = k; r a b c = l}
+%
+    |lcbr(
+          j . in . i1 = (const 1)
+    )(
+          j . in . i2  = add .(add . ((a*) >< (b*)) >< (c*)) . split (split j k) l
+    )|
+
+    |lcbr(
+          k . in . i1 = (const 1)
+    )(
+          k . in . i2  = j
+     )|
+
+    |lcbr(
+          l . in . i1 = (const 0)
+    )(
+          l . in . i2 = k
+     )|
+\just\equiv{Cancelamento-+ (18) * 3}
+    |lcbr3(
+          j . in = either (const 1) ( add .(add . ((a*) >< (b*)) >< (c*)) . split (split j k) l)
+    )(
+          k . in = either (const 1) j
+    )(
+          l . in= either (const 0) k
+    )|
+
+\just\equiv{Natural-id(1); Absorção-x(22); Cancelamento-x(7) * 4}
+    |lcbr3(
+          j . in = either (const 1) ( add .(add . ((a*) >< (b*)) >< (c*))) . (1 + split (split j k) l)
+    )(
+          k . in = either (const 1) (p1.p1. split (split j k)(l))
+    )(
+          l . in= either (const 0) (p2.p1.split (split j k)(l))
+    )|
+\just\equiv{Natural-id(1)*2; Absorção-x(22) * 2;F2}
+    |lcbr(
+          j . in = either (const 1) ( add .(add . ((a*) >< (b*)) >< (c*))) . (1 + split (split j k) l)
+    )(
+          k . in = (either (const 1) (p1.p1) ) . F (split (split j k) l)
+    )(
+          l . in = (either (const 0) (p2.p1). F (split (split j k)(l)))
+    )|
+\just\equiv{Eq-x(16); Fusão-x(9) * 2}
+    |lcbr(
+          split j k . in = (split (either (const 1) (add.(add.((a*)><(b*))><(c*))) ) (either (const 1) (p1.p1))) . F (split (split j k) l)
+    )(
+          l . in = (either (const 1) (p2.p1) ) . F (split (split j k) l)
+    )|
+\just\equiv{Lei da Troca(28)}
+    |lcbr(
+          split j k . in = (either (split (const 1) (const 1)) (split (add.(add.((a*)><(b*))><(c*))) (p1.p1))) . F (split (split j k) l)
+    )(
+          l . in = (either (const 1) (p2.p1) ) . F (split (split j k) l)
+    )|
+\just\equiv{Fokkinga(53)}
+    |split (split j k) l = cata( either (split (split (const 1) (const 1)) (const 0)) (split (split (add.(add.((a*)><(b*))><(c*))) (p1.p1)) (p2.p1)) ) |
+\just\equiv{j = p a b c; k = q a b c; l = r a b c}
+    |split (split (p a b c) (q a b c)) (r a b c) = cata( either (split (split (const 1) (const 1)) (const 0)) (split (split (add.(add.((a*)><(b*))><(c*))) (p1.p1)) (p2.p1)) )   |
+\qed
+
+    |split (split (const 1)(const 1)) (const 0) = (const (((1,1),0))|
+\just\eqiv{ Igualdade estensional (72); Def-split(77)*2; Def-const (75) * 4}
+    |((1,1),0) = ((1,1),0)|
+
+
+
+\qed
+\end{eqnarray*}
 \begin{code}
+
 loop a b c = split (split (add . ((add . ((a*) >< (b*))) >< (c*))) (p1 . p1)) (p2 . p1)
 initial = ((1,1),0) 
 wrap = p2
 
-{- teste a b c 0 = 0 -}
-
-{- teste a b c (n+1) =  -}
-
 \end{code}
+
+\textbf{Testes de Performance}
+
+Apresenta-se agora duas imagens (figuras \ref{fig:testeF} e \ref{fig:testeFbl}) que demonstram o quão mais eficiente fbl é em relação a f.
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.9\textwidth]{cp2223t_media/teste.png}
+  \caption{Execução de f 1 1 1 para diferentes tamanhos de input}
+  \label{fig:testeF}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \includegraphics[width=0.9\textwidth]{cp2223t_media/testefibl.png}
+  \caption{Execução de fbl 1 1 1 para diferentes tamanhos de input}
+  \label{fig:testeFbl}
+\end{figure}
+
+É possível ver que para f (figura \ref{fig:testeF}), à medida que o tamanho do input vai aumentando, o tempo de execução vai aumentando também, mas de forma exponencial, enquanto para fbl (figura \ref{fig:testeFbl}) o tempo de execução se mantém igual (não mostramos mais porque já deu para verificar que é muito mais eficiente).
 
 \subsection*{Problema 2}
 
+Neste exercício é pedido que apresentemos uma definição para o gene do anaformismo do tipo \emph{Exp S S}, a partir de uma lista de String. Olhando para a definição de um anaformismo para este tipo de dados, vimos que o seu Functor aplica a um id lado esquerdo do + (ou seja, a tudo que apareça do tipo i1 a, é lhe aplicado um id), e do lado direito aplica um id ao lado esquerdo da multiplicação e faz um map com o anamorfismo que estejamos a definir do lado direito, pelo que na nossa definição de gene, decidimos tirar partido de out, que no caso de uma lista ser singular (só um elemento), devolve i1 com esse elemento, caso contrário coloca o primeiro elemento na primeira posição de um par, e o resto na segunda, aplicando ao resultado dessa função uma soma de funções, que a algo do tipo i1 lhe faz id, e se for um par separa a lista (lado direito) pelas diferentes sub-árvores com um nível de indentação acima do elemento da cabeça (primeiro elemento do par).
+
 Gene de |tax|:
 \begin{code}
---gene = undefined
 gene = (id -|- separa) . out
 
 separa (a,b) = (a, (groupBy (\_ y -> nivelIdent y > identPai) b))
@@ -1153,69 +1301,215 @@ contaEspacos [] = 0
 contaEspacos (h:t) = if (h /= ' ') then 0 else 1 + contaEspacos t
 
 \end{code}
+\begin{eqnarray*}
+\xymatrix@@C=7cm{
+    |S|^*
+      \ar[d]^{|tax|}
+      \ar[r]^{|gene|}
+&
+    |S|^* + |S|^* \times (S^*)^*
+           \ar[d]^{|id + id >< maptax|}
+\\
+     | Exp S S|
+&
+    |S|^* + |S|^*|>< Exp S S|
+           \ar[l]^{|inExp|}
+}
+\end{eqnarray*}
+
+Nesta segunda parte do exercício, é pedido para definir a função post, que recebe uma Exp S S e retorna uma lista de lista de String, em que cada uma dessas listas corresponderá a um caminho na árvore. Para a definir acabamos por definir duas funções auxiliares, uma que coloca um elemento numa lista de listas (aplicado a elementos da árvore do tipo Var), e outra que recebendo um par (elemento,lista de listas), coloca esse elemento na cabeça de todas as listas que estejam na lista que está do lado direito do par. Assim, resumidamente, esta função começa a desconstruir a árvore Exp S S pelas folhas, e começa a construir o resultado final através da adição das diferentes String de nível abaixo (considerando que um nível maior corresponde a maior indentação) à cabeça das folhas, criando os caminhos iterativamente, até que se chegue ao pai, tendo assim o resultado final.
+
 Função de pós-processamento:
 \begin{code}
 
-post = (either (singleton . singleton) (cons . (split (p1) (\(x,l) -> map (x++) l) . (singleton >< (concat . (map (post)))) ))) . outExp
-
+post = (either (doubleSingl) (cons . (split (p1) (fstACabeca) . (singleton >< (concatMap (post))) ))) . outExp
+    where doubleSingl = singleton . singleton
+          fstACabeca (x,l) = map (x++) l 
+          
 
 \end{code}
 
 \subsection*{Problema 3}
-\begin{code}
---type Square = (Point, Side)
---type Side = Double
---type Point = (Double, Double)
 
+Neste exercício foi nos pedido para fazer um anamorfismo de Rose Tree Square, ou seja, uma Rose Tree em que a informação contida na mesma são os quadrados correspondentes aos diferentes níveis do tapete de sierpinski.
+
+À semelhança do exercício anterior onde fizemos um anamorfismo, começamos por averiguar o funcionamento de anaRose, anamorfismo de Rose Tree's, e verificamos que neste caso o Functor é aplicado a um par, em que ao elemento do lado esquerdo é aplicada a identidade, e do lado direito é feito um  map com o próprio anamorfismo, pelo que o gene deste anamorfismo teria que transformar o input dado em algo compatível com esse tipo. 
+
+O que nós fizemos foi uma função que, ao receber um quadrado e uma profundidade, se essa profundidade for 0, retornamos um par em que do lado esquerdo termos o quadrado que se localiza no meio do que é dado como argumento, e do lado direito uma lista vazia. Caso essa profundidade não seja 0, o comportamento para o lado esquerdo é idêntico ao explicado para caso a profundidade seja 0, mas do lado direito é retornada uma lista com os sub quadrados onde os próximos elementos da sequência devem ser desenhados, com profundidade decrementada.
+
+\begin{code}
 squares = anaRose gsq
 
 gsq (((x,y),s),0) = ( ((x+(s/3),y+(s/3)),s/3) ,[])
-gsq (sq@((x,y),s),p+1) = ( ((x+newSide,y+newSide),newSide) , [sq1,sq2,sq3,sq4,sq5,sq6,sq7,sq8] )
+gsq (sq@((x,y),s),p+1) = (((x+newSide,y+newSide),newSide) , filhosFinal)
     where newSide = s/3
-          xEsq = x
-          xMeio = x + newSide
-          xDir = x + 2*newSide
-          yCima = y + 2*newSide
-          yMeio = y + newSide
-          yBaixo = y
-          sq1 =  (((xEsq  ,yCima  ),newSide),p)
-          sq2 =  (((xMeio ,yCima  ),newSide),p)
-          sq3 =  (((xDir  ,yCima  ),newSide),p)
-          sq4 =  (((xEsq  ,yMeio  ),newSide),p)
-          sq5 =  (((xDir  ,yMeio  ),newSide),p)
-          sq6 =  (((xEsq  ,yBaixo ),newSide),p)
-          sq7 =  (((xMeio ,yBaixo ),newSide),p)
-          sq8 =  (((xDir  ,yBaixo ),newSide),p)
+          filhos = coordsFilhos sq
+          filhosFinal = map (addDir p) filhos
+
+coordsFilhos ((x,y),side) = [ ((x+xO, y+yO),nS)|xO<-offsets,yO<-offsets,(xO/=yO||x/=nS) ]
+    where nS = side/3
+          offsets = [0, nS, 2*nS]
+addDir v p = (p,v)
+
+\end{code}
+\begin{eqnarray*}
+\xymatrix@@C=3cm{
+    Square \times Integer
+           \ar[d]^{|squares|}
+           \ar[r]^{|gsp|}
+&
+    Square \times (Square \times Integer)^*
+           \ar[d]^{id \times map squares}
+\\
+     |Rose Square|
+&
+     Square  \times (Rose Square)^*
+           \ar[l]^{|inRose|}
+}
+\end{eqnarray*}
+
+Em seguida, ainda na primeira parte do Exercício 3, é pedido um catamorfismo usado para converter uma Rose Tree em uma lista.
+
+Considerando que uma Rose Tree é constituída por um elemento e uma lista de Rose Tree, apenas aplicamos a identidade a esse elemento que ficará na cabeça, e concatenamos a lista de Rose Tree (que quando é concatenada ja foi transformada numa lista de listas de elementos).
+
+\begin{code}
+
 
 rose2List = cataRose gr2l 
 
 gr2l = cons . (id >< concat)
 
-fazPar a b = (a,b)
+\end{code}
+\begin{center}
+\begin{eqnarray*}
+\xymatrix@@C=4cm{
+    |Rose A|
+           \ar[d]^{|rose2List|}
+           \ar[r]^{|outRose|}
+&
+    A \times (Rose A)^*
+           \ar[d]^{id \times  rose2List}
+\\
+     |[A]|
+&
+      A  \times (A^*)^*
+           \ar[l]^{|gr2l|}
+}
+\end{eqnarray*}
+\end{center}
 
-carpets = (id -|- (split (sierpinski . (fazPar ((0,0),32))) id)) . outNat
+Já na segunda parte do exercício, foi nos pedido para definir, numa primeira parte, um anamorfismo, que construirá, recebendo um inteiro n, a lista com os tapetes de profundidade 1 até n.
 
-present = undefined
+No gene deste anamorfismo começamos por primeiro aplicar o outNat, para poder transformar em algo que o anamorfismo pudesse usar. Ao resultado dessa função aplicamos uma soma de funções, que a algo do tipo i1 () aplica a identidade, e a algo do tipo i2 a, aplicámos um split que cria um par que do lado esquerdo terá uma lista de Square (um tapete) e do lado direito terá a profundidade do próximo tapete a gerar.
+
+\begin{code}
+
+sqInicial = split (const ((0,0),32)) id
+
+carpets = anaList geneCarpets
+
+geneCarpets = ((id -|- (split (sierpinski . sqInicial) id)) . outNat)
+
+\end{code}
+\begin{center}
+\begin{eqnarray*}
+\xymatrix@@C=7cm{
+    |Nat0|
+           \ar[d]^{|carpets|}
+           \ar[r]^{|genecarperts|}
+&
+    1 + Square^* \times |Nat0|
+           \ar[d]^{id + id \times carpets}
+\\
+     (Square^*)^*
+&
+      1 + Square^*  \times (Square^*)^*
+           \ar[l]^{|inList|}
+}
+\end{eqnarray*}
+\end{center}
+
+Em seguida foi pedido para definir um catamorfismo que percorre uma lista de listas de Square, desenhando todos os elementos, com 1 segundo de intervalo entre os mesmos.
+
+Este exercício foi complicado pois adiciona uma componente monádica, sendo preciso termos em conta isso para o retorno da função. No gene do catamorfismo, se for recebido algo do tipo i1 () apenas retornamos uma lista vazia, e caso tenhamos algo do tipo i2 (a,b), aplicamos a função consIO que, recebendo um par ([Square], IO [()]), retorna apenas IO [()], e que, antes de fazer essa junção, desenha o tapete e espera 1 segundo. 
+
+É de reforçar que antes de correr o catamorfismo aplicamos um reverse à lista dada como input, visto que a lista retornada por carpets tem primeiro os tapetes de profundidade mais elevada, e nós aqui queremos desenhar primeiro os de profundidade mais baixa. Possivelmente esta não é a melhor alternativa, mas foi a única maneira que (até agora) arranjamos de resolver este problema.
+
+
+\begin{code}
+
+ignora1 a = return []
+
+apresentaSq :: [Square] -> IO ()
+apresentaSq a = drawSq a >> await >>= return
+
+consIO (h,t) = do { r1 <- apresentaSq h ; r2 <- t ; return (r2 ++ [r1]) }
+
+genePresent :: Either () ([Square], IO [()]) -> IO [()]
+genePresent = either (ignora1) (consIO)
+
+present :: [[Square]] -> IO [()]
+present = cataList genePresent . reverse
 \end{code}
 
 \subsection*{Problema 4}
+
+Antes de partir para a resolução do exercício em si, queríamos apenas clarificar que apenas resolvemos a parte não probabilística deste exercício. 
+
 \subsubsection*{Versão não probabilística}
+
+Na primeira parte desta versão do exercício, é nos proposta a definição de cgene, o gene do catamorfismo consolidate', que é usado para calcular os pontos de cada equipa no final da simulação da fase de grupos.
+
+Para a resolução desse problema definimos uma função auxiliar que recebe um par ((equipa, pontos), [(equipa, pontos)]), e que devolve [(equipa, pontos)], que soma todos os pontos que a equipa passa no primeiro par do argumento tem.
+
+No próprio gene do catamorfismo, apenas aplicamos um either em que, algo do tipo i1 () é transformado numa lista vazia, a algo do tipo i2 a é aplicada a função explicada acima.
+
 Gene de |consolidate'|:
 \begin{code}
---cgene = (Eq a, Num b) => (Either () ((a,b)))
---cgene = undefined
 cgene :: (Eq a, Num b) => Either () ((a,b), [(a,b)]) -> [(a,b)]
 cgene = (either nil adiciona)
 
 adiciona (p,[]) = singleton p
 adiciona ((a,b), (a1,b1):t) = if a==a1 then (a,b + b1):t else (a1,b1) : adiciona ((a,b),t)
---adiciona ((a,b),(a1,b1):t) = (Cp.cond (a==) ((a,b+b1):t) (cons ((a1,b1) , (adiciona ((a,b),t))) ) ) a1
-
 \end{code}
+%--adiciona ((a,b),(a1,b1):t) = (Cp.cond (a==) ((a,b+b1):t) (cons ((a1,b1) , (adiciona ((a,b),t))) ) ) a1
+
+\begin{eqnarray*}
+\xymatrix@@C=7cm{
+    |(A><B)|^*
+      \ar[d]^{|consolidate'|}
+      \ar[r]^{|outList|}
+&
+    |1 + (A><B) >< (A><B)|^*
+           \ar[d]^{|id + id >< consolidate'|}
+\\
+    |A><B|^*
+&
+    |1 + (A><B) >< (A><B)|^*
+           \ar[l]^{|cgene|}
+}
+\end{eqnarray*}
+
+Em seguida é nos solicitado que apresentemos uma definição para a função pairup que, recebendo uma lista de equipas, retorna uma lista com todos os jogos que devem ser realizados entre essas equipas.
+
+Depois pedem ainda que seja definida uma função que retorna uma lista com os pontos associados a duas equipas que realizam um jogo entre si, e ainda um gene para o anamorfismo que é usado para transformar a lista dos vencedores da fase de grupos em uma LTree de equipas, referente à fase eliminatória do campeonato.
+
+Vamos agora explicar brevemente como pensamos para resolver cada um dos requisitos:
+
+\begin{itemize}
+
+	\item pairup: recebe uma lista de equipas e adiciona à lista final todos os jogos que a equipa a cabeça pode fazer com o resto das equipas, chamando-se a si própria recursivamente para o resto das equipas.
+
+	\item matchResult: aplicamos a função de critério ao jogo em questão, sabendo que o resultado disso é Maybe Team, definimos um outMaybe, que recebendo um Maybe a retorna i1 () caso seja Nothing e i2 a caso seja Just a, aplicando em seguida um either que retorna a lista correspondente aos pontos de cada equipa.
+
+	\item glt: sendo este o gene de um anamorfismo de LTree A, tendo neste caso que A é do tipo Team. Definimos uma função auxiliar chamada outTeamList que, recebendo uma lista de equipas, se esta só tiver um elemento, retorna i1 a, sendo a esse elemento, e caso contenha mais que um elemento retorna i2 (a,b), em que a e b são duas metades da lista.
+
+\end{itemize}
+
 Geração dos jogos da fase de grupos:
 \begin{code}
 pairup [] = []
-pairup (x:xs) = map (\y -> (x,y)) xs ++pairup xs
+pairup (x:xs) = map (split (const x) id) xs ++ pairup xs
 
 outMaybe Nothing = i1 ()
 outMaybe (Just a) = i2 a
@@ -1233,15 +1527,45 @@ outTeamList l = let splitPoint = div (length l) 2
                 in i2 sl
 
 glt = outTeamList
+
 \end{code}
+\begin{eqnarray*}
+\xymatrix@@C=5cm{
+    |A|^*
+      \ar[d]^{|ana(g)|}
+      \ar[r]^{|glt|}
+&
+    |A + A|^*|>< A|^*
+           \ar[d]^{|id + ana(glt) >< ana(glt)|}
+\\
+    LTree A
+&
+    |A + LTree A >< LTree A |
+           \ar[l]^{|inLTree|}
+}
+
+\end{eqnarray*}
 \subsubsection*{Versão probabilística}
+
+Como já referimos, acabamos por não fazer esta parte do trabalho, apenas definimos a função pmatchResult, que recebendo o critério e um jogo nos dá um Dist ([(Team,Int)]), com a probabilidade dos pontos das equipas no final do jogo serem esses.
+
 \begin{code}
 pinitKnockoutStage = undefined
 
-pgroupWinners :: (Match -> Dist (Maybe Team)) -> [Match] -> Dist [Team]
-pgroupWinners = undefined
+getMatch (D l) = ((split (head) (head . tail)) . (map fst) . fst . head) l 
 
-pmatchResult = undefined
+sameMatch (a,b) (a1,b1) = (a == b && a1 == b1) || (a==b1 && b == a1) 
+
+\end{code}
+%--% padiciona (p,[]) singleton = singleton p
+%--% padiciona ((p1@(a,b),prob), (p2@(a1,b1),prob2):t)
+%--%  | p1 == p2 = (p2,prob2) : padiciona ((p1,prob1):t)
+\begin{code}
+
+pgroupWinners :: (Match -> Dist (Maybe Team)) -> [Match] -> Dist [Team]
+pgroupWinners pcriteria = undefined  
+
+pmatchResult func match = fmap (either (empate match) (vencedor match) . outMaybe) (func match)
 \end{code}
 
 %----------------- Índice remissivo (exige makeindex) -------------------------%
